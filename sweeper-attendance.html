@@ -409,7 +409,7 @@
 </div>
 
 <script>
-const STORAGE_KEY = 'sweeper_records_seed_v4';
+const STORAGE_KEY = 'sweeper_records_final_v5';
 const LAST_EMPLOYEE_KEY = 'sweeper_last_employee_name';
 const API_URL = '/api/attendance';
 
@@ -472,10 +472,11 @@ async function fetchCloudRecords() {
   updateSyncBadge('syncing');
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    records = raw ? JSON.parse(raw) : { ...initialSeedRecords };
-  } catch (e) {
-    records = { ...initialSeedRecords };
-  }
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && Object.keys(parsed).length > 0) records = parsed;
+    }
+  } catch (e) {}
 
   try {
     const res = await fetch(API_URL);

@@ -33,14 +33,26 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     if (KV_URL && KV_TOKEN) {
       try {
-        const response = await fetch(`${KV_URL}/get/sweeper_records_seed_v4`, {
+        const response = await fetch(`${KV_URL}/get/sweeper_records_final_v5`, {
           headers: { Authorization: `Bearer ${KV_TOKEN}` }
         });
         const data = await response.json();
-        const records = data.result ? (typeof data.result === 'string' ? JSON.parse(data.result) : data.result) : null;
-        if (records && Object.keys(records).length > 0) {
-          return res.status(200).json({ success: true, records, source: 'Vercel KV' });
+        let records = data.result ? (typeof data.result === 'string' ? JSON.parse(data.result) : data.result) : null;
+        
+        // If KV is brand new/empty, seed it automatically with initial 2-week records!
+        if (!records || typeof records !== 'object' || Object.keys(records).length === 0) {
+          records = { ...initialSeedRecords };
+          await fetch(`${KV_URL}/set/sweeper_records_final_v5`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${KV_TOKEN}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(JSON.stringify(records))
+          });
         }
+
+        return res.status(200).json({ success: true, records, source: 'Vercel KV' });
       } catch (err) {
         console.error('KV Read Error:', err);
       }
@@ -62,7 +74,7 @@ export default async function handler(req, res) {
       memoryCacheRecords = records;
 
       if (KV_URL && KV_TOKEN) {
-        await fetch(`${KV_URL}/set/sweeper_records_seed_v4`, {
+        await fetch(`${KV_URL}/set/sweeper_records_final_v5`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${KV_TOKEN}`,
@@ -84,7 +96,7 @@ export default async function handler(req, res) {
     memoryCacheRecords = {};
     if (KV_URL && KV_TOKEN) {
       try {
-        await fetch(`${KV_URL}/set/sweeper_records_seed_v4`, {
+        await fetch(`${KV_URL}/set/sweeper_records_final_v5`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${KV_TOKEN}`,
