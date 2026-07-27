@@ -612,6 +612,7 @@ function renderPanel(rec) {
   let saveBtnLabel = 'Save';
   if (isFuture) saveBtnLabel = '🔒 Form Opens at 12:00 AM';
   else if (isEditLocked) saveBtnLabel = '🔒 Record Locked';
+  else if (rec && editCount === 1) saveBtnLabel = 'Proceed';
 
   const card = document.getElementById('panelCard');
   card.innerHTML = `
