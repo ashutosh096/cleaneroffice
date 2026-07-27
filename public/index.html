@@ -409,7 +409,7 @@
 </div>
 
 <script>
-const STORAGE_KEY = 'sweeper_records_seed_v3';
+const STORAGE_KEY = 'sweeper_records_seed_v4';
 const LAST_EMPLOYEE_KEY = 'sweeper_last_employee_name';
 const API_URL = '/api/attendance';
 
@@ -424,9 +424,7 @@ const initialSeedRecords = {
   "2026-07-21": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Prerna", editCount: 1, locked: false },
   "2026-07-22": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Priyanka", editCount: 1, locked: false },
   "2026-07-23": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Priyanka", editCount: 1, locked: false },
-  "2026-07-24": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Ashutosh", editCount: 1, locked: false },
-  "2026-07-25": { status: "absent", tasks: { sweeping: false, mopping: false, dusting: false, fullCleaning: false }, employeeName: "Priyanka", editCount: 1, locked: false },
-  "2026-07-27": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Priyanka", editCount: 1, locked: false }
+  "2026-07-24": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Ashutosh", editCount: 1, locked: false }
 };
 
 let records = { ...initialSeedRecords };
