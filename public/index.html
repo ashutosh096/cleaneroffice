@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sweeper attendance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #F2F7F4;
+    color: #0E362E;
+    padding: 24px 16px 60px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 520px; margin: 0 auto; }
+
+  /* CAPSULE HEADER CONTAINER */
+  .header-card {
+    background: #FFFFFF;
+    border: 1px solid #E0ECE6;
+    border-radius: 24px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  }
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  h1 { font-size: 20px; font-weight: 700; color: #0C382E; margin: 0 0 2px; }
+  .sub { color: #587970; font-size: 12.5px; margin: 0; }
+
+  /* CAPSULE BADGE */
+  .capsule-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #F2F7F4;
+    border: 1px solid #E0ECE6;
+    border-radius: 9999px;
+    padding: 6px 14px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+  }
+
+  .sync-badge {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #0D8A68;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .sync-badge.syncing { color: #92400E; }
+  .sync-badge.offline { color: #991B1B; }
+
+  .capsule-divider {
+    width: 1px;
+    height: 12px;
+    background: #CBDCD4;
+  }
+
+  .gauge-text {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #0D8A68;
+  }
+
+  /* CAPSULE DOWNLOAD PDF BUTTON */
+  .pdf-btn {
+    width: 100%;
+    padding: 13px;
+    background: #0D8A68;
+    color: #ffffff;
+    border: none;
+    border-radius: 9999px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(13, 138, 104, 0.25);
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  .pdf-btn:hover { background: #0B785A; transform: translateY(-1px); }
+
+  /* CARDS */
+  .card {
+    background: #FFFFFF;
+    border: 1px solid #E0ECE6;
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  }
+
+  .month-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .month-nav button {
+    background: #EEF5F1;
+    border: none;
+    border-radius: 9999px;
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #0E362E;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+  }
+  .month-nav button:hover { background: #E1EDE7; }
+  .month-label { font-weight: 700; font-size: 15px; color: #0C382E; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+  .dow {
+    text-align: center;
+    font-size: 11px;
+    color: #7D9B92;
+    padding-bottom: 8px;
+    font-weight: 600;
+  }
+  .day {
+    aspect-ratio: 1;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    background: #F7FAF8;
+    color: #385950;
+    transition: all 0.15s ease;
+  }
+  .day:hover { border-color: #A6C9BE; }
+  .day.empty { visibility: hidden; cursor: default; }
+  .day.today { border-color: #0D8A68; font-weight: 700; color: #0C382E; }
+  .day.present { background: #E6F4EA; color: #0B6E53; border-color: #A8DAB5; font-weight: 600; }
+  .day.absent { background: #FCE8E6; color: #A50E0E; border-color: #F5B2AD; font-weight: 600; }
+  .day.future { opacity: 0.5; cursor: not-allowed; }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    padding-top: 12px;
+    font-size: 12px;
+    color: #587970;
+    font-weight: 500;
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  .panel-title {
+    font-weight: 700;
+    font-size: 15px;
+    color: #0C382E;
+    margin: 0 0 2px;
+  }
+  .panel-date { color: #587970; font-size: 13px; margin: 0 0 16px; }
+
+  /* LOCK BADGES */
+  .lock-info-badge {
+    font-size: 12px;
+    padding: 8px 14px;
+    border-radius: 9999px;
+    margin-bottom: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .lock-info-badge.can-edit { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
+  .lock-info-badge.is-locked { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
+  .lock-info-badge.is-future { background: #E2E8F0; color: #475569; border: 1px solid #CBD5E1; }
+
+  /* FORM GROUP FOR EMPLOYEE NAME */
+  .form-group {
+    margin-bottom: 16px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #7D9B92;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+  .form-control {
+    width: 100%;
+    padding: 11px 16px;
+    border-radius: 9999px;
+    border: 1px solid #E0ECE6;
+    background: #F7FAF8;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: #0E362E;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .form-control:focus { border-color: #0D8A68; background: #FFFFFF; }
+  .form-control:disabled { background: #EFEFEF; cursor: not-allowed; color: #777; }
+
+  /* CAPSULE STATUS BUTTONS */
+  .status-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .status-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 9999px;
+    border: 1px solid #E0ECE6;
+    background: #F7FAF8;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #587970;
+    transition: all 0.15s ease;
+    text-align: center;
+  }
+  .status-btn.active-present {
+    background: #F1F8F5;
+    border: 1.5px solid #0D8A68;
+    color: #0D8A68;
+  }
+  .status-btn.active-absent {
+    background: #FCE8E6;
+    border: 1.5px solid #D93025;
+    color: #A50E0E;
+  }
+  .status-btn:disabled { cursor: not-allowed; opacity: 0.7; }
+
+  /* CAPSULE TASKS */
+  .tasks-container {
+    margin-bottom: 16px;
+  }
+  .task-label {
+    font-size: 11px;
+    color: #7D9B92;
+    margin-bottom: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .task-list { display: flex; flex-direction: column; gap: 10px; }
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #F7FAF8;
+    border-radius: 9999px;
+    border: 1px solid #E0ECE6;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease;
+  }
+  .task-item:hover { background: #EEF5F1; }
+  .task-item input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #0D8A68;
+    border-radius: 4px;
+  }
+  .task-item input:disabled { cursor: not-allowed; }
+  .task-item label { font-size: 13.5px; cursor: pointer; flex: 1; font-weight: 500; color: #0E362E; }
+
+  /* CAPSULE SAVE BUTTON */
+  .save-btn {
+    width: 100%;
+    padding: 14px;
+    background: #0C3E33;
+    color: #ffffff;
+    border: none;
+    border-radius: 9999px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  .save-btn:hover { background: #082D25; transform: translateY(-1px); }
+  .save-btn:disabled { background: #94A3B8; cursor: not-allowed; transform: none; }
+
+  /* CAPSULE STAT BOXES */
+  .summary-row {
+    display: flex;
+    gap: 10px;
+  }
+  .stat {
+    flex: 1;
+    background: #F7FAF8;
+    border: 1px solid #E0ECE6;
+    border-radius: 20px;
+    padding: 14px 8px;
+    text-align: center;
+  }
+  .stat .num { font-size: 20px; font-weight: 700; color: #0C382E; }
+  .stat .lbl { font-size: 11px; color: #7D9B92; font-weight: 600; margin-top: 2px; }
+
+  .status-msg {
+    font-size: 12px;
+    text-align: center;
+    margin-top: 10px;
+    min-height: 16px;
+    font-weight: 600;
+  }
+  .status-msg.success { color: #0D8A68; }
+  .status-msg.error { color: #D93025; }
+
+  .empty-hint {
+    text-align: center;
+    color: #7D9B92;
+    font-size: 13px;
+    padding: 20px 0;
+  }
+
+  /* PRINT FORMATTING */
+  @media print {
+    body { background: #FFF !important; color: #000 !important; padding: 0 !important; }
+    .wrap { max-width: 100% !important; margin: 0 !important; }
+    .pdf-btn, #panelCard, .month-nav button, .header-card { display: none !important; }
+    .card { border: 1px solid #CCC !important; box-shadow: none !important; }
+    .print-header { display: block !important; margin-bottom: 16px; }
+  }
+  .print-header { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  
+  <div class="print-header">
+    <h1 style="font-size:22px; color:#000; margin-bottom:4px;">Sweeper Attendance Report</h1>
+    <p style="font-size:12px; color:#555;" id="printReportSubtitle"></p>
+    <hr style="margin:10px 0; border:0; border-top:1px solid #ccc;">
+  </div>
+
+  <!-- ENTIRE TOP HEADER IN CAPSULE CARD STRUCTURE -->
+  <div class="header-card">
+    <div class="header-row">
+      <div>
+        <h1>Sweeper attendance</h1>
+        <p class="sub">Tap a date to mark attendance and cleaning tasks.</p>
+      </div>
+      
+      <div class="capsule-badge">
+        <span class="sync-badge" id="syncBadge">🟢 Synced</span>
+        <span class="capsule-divider"></span>
+        <span class="gauge-text" id="gaugeCircle">0%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOWNLOAD PDF BUTTON -->
+  <button class="pdf-btn" id="downloadPdfBtn">Download attendance PDF</button>
+
+  <!-- CALENDAR CARD -->
+  <div class="card">
+    <div class="month-nav">
+      <button id="prevMonth" aria-label="Previous month">&#8249;</button>
+      <div class="month-label" id="monthLabel">July 2026</div>
+      <button id="nextMonth" aria-label="Next month">&#8250;</button>
+    </div>
+    <div class="grid" id="dowRow"></div>
+    <div class="grid" id="calGrid" style="margin-top:6px;"></div>
+    <div class="legend">
+      <span><i class="sw" style="background:#0D8A68"></i>Present</span>
+      <span><i class="sw" style="background:#FCE8E6; border:1px solid #F5B2AD;"></i>Absent</span>
+    </div>
+  </div>
+
+  <!-- MARK ATTENDANCE CARD -->
+  <div class="card" id="panelCard">
+    <p class="panel-title">Select a date</p>
+    <p class="empty-hint">Tap any day on the calendar above to log attendance.</p>
+  </div>
+
+  <!-- SUMMARY STATS CARD -->
+  <div class="card">
+    <p class="panel-title" style="margin-bottom:14px;">This month</p>
+    <div class="summary-row">
+      <div class="stat"><div class="num" id="sumTotalDays">0</div><div class="lbl">Total days</div></div>
+      <div class="stat"><div class="num" id="sumPresent">0</div><div class="lbl">Present</div></div>
+      <div class="stat"><div class="num" id="sumAbsent">0</div><div class="lbl">Absent</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const STORAGE_KEY = 'sweeper_records_clean_v1';
+const LAST_EMPLOYEE_KEY = 'sweeper_last_employee_name';
+const API_URL = '/api/attendance';
+
+let records = {};
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+let selectedDate = null;
+let selectedStatus = null;
+let selectedTasks = { sweeping: true, mopping: true, dusting: true, fullCleaning: true };
+
+const DOW = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function fmt(y, m, d) {
+  return y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+}
+
+function isFutureDate(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const target = new Date(y, m - 1, d);
+  target.setHours(0, 0, 0, 0);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return target > today;
+}
+
+function updateSyncBadge(status) {
+  const badge = document.getElementById('syncBadge');
+  if (!badge) return;
+  if (status === 'synced') {
+    badge.className = 'sync-badge';
+    badge.textContent = '🟢 Synced';
+  } else if (status === 'syncing') {
+    badge.className = 'sync-badge syncing';
+    badge.textContent = '🔄 Syncing...';
+  } else if (status === 'offline') {
+    badge.className = 'sync-badge offline';
+    badge.textContent = '🟠 Saved Locally';
+  }
+}
+
+// LOAD RECORDS FROM BACKEND AND LOCALSTORAGE FALLBACK
+async function fetchCloudRecords() {
+  updateSyncBadge('syncing');
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    records = raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    records = {};
+  }
+
+  try {
+    const res = await fetch(API_URL);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.records) {
+        records = data.records;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+      }
+      updateSyncBadge('synced');
+    } else {
+      updateSyncBadge('offline');
+    }
+  } catch (e) {
+    updateSyncBadge('offline');
+  }
+
+  renderCalendar();
+}
+
+// SAVE RECORDS TO BACKEND API & LOCALSTORAGE
+async function pushCloudRecords() {
+  updateSyncBadge('syncing');
+  
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  } catch (e) {}
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ records })
+    });
+    if (res.ok) {
+      updateSyncBadge('synced');
+    } else {
+      updateSyncBadge('offline');
+    }
+  } catch (e) {
+    updateSyncBadge('offline');
+  }
+}
+
+function renderDow() {
+  const row = document.getElementById('dowRow');
+  row.innerHTML = DOW.map(d => `<div class="dow">${d}</div>`).join('');
+}
+
+function renderCalendar() {
+  document.getElementById('monthLabel').textContent = MONTHS[currentMonth] + ' ' + currentYear;
+  const grid = document.getElementById('calGrid');
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const todayStr = fmt(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+
+  let html = '';
+  for (let i = 0; i < firstDay; i++) html += `<div class="day empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = fmt(currentYear, currentMonth, d);
+    const rec = records[dateStr];
+    const isFuture = isFutureDate(dateStr);
+    let cls = 'day';
+
+    if (dateStr === todayStr) cls += ' today';
+    if (isFuture) cls += ' future';
+
+    if (rec) {
+      if (rec.status === 'present') cls += ' present';
+      else if (rec.status === 'absent') cls += ' absent';
+    }
+    html += `<div class="${cls}" data-date="${dateStr}">${d}</div>`;
+  }
+  grid.innerHTML = html;
+
+  grid.querySelectorAll('.day:not(.empty)').forEach(el => {
+    el.addEventListener('click', () => openDay(el.getAttribute('data-date')));
+  });
+
+  updateSummary();
+}
+
+function updateSummary() {
+  const monthPrefix = currentYear + '-' + String(currentMonth+1).padStart(2,'0');
+  let present = 0, absent = 0, total = 0;
+
+  Object.keys(records).forEach(k => {
+    if (k.startsWith(monthPrefix)) {
+      total++;
+      if (records[k].status === 'present') present++;
+      else if (records[k].status === 'absent') absent++;
+    }
+  });
+
+  document.getElementById('sumTotalDays').textContent = total;
+  document.getElementById('sumPresent').textContent = present;
+  document.getElementById('sumAbsent').textContent = absent;
+
+  const pct = total > 0 ? Math.round((present / total) * 100) : 0;
+  document.getElementById('gaugeCircle').textContent = pct + '%';
+}
+
+function openDay(dateStr) {
+  selectedDate = dateStr;
+  const rec = records[dateStr] || null;
+  selectedStatus = rec ? rec.status : 'present';
+  selectedTasks = rec && rec.tasks ? { ...rec.tasks } : { sweeping: true, mopping: true, dusting: true, fullCleaning: true };
+  renderPanel(rec);
+}
+
+function renderPanel(rec) {
+  const [y, m, d] = selectedDate.split('-').map(Number);
+  const niceDate = new Date(y, m-1, d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const savedEmployeeName = localStorage.getItem(LAST_EMPLOYEE_KEY) || '';
+
+  const isFuture = isFutureDate(selectedDate);
+  const employeeNameVal = rec && rec.employeeName ? rec.employeeName : savedEmployeeName;
+  const editCount = rec && typeof rec.editCount === 'number' ? rec.editCount : (rec ? 1 : 0);
+  const isEditLocked = rec && (rec.locked || editCount >= 2);
+
+  const isDisabled = isFuture || isEditLocked;
+
+  let lockBadgeHtml = '';
+  if (isFuture) {
+    lockBadgeHtml = `<div class="lock-info-badge is-future">🔒 Future Date - Form filling opens at 12:00 AM midnight of this day.</div>`;
+  } else if (isEditLocked) {
+    lockBadgeHtml = `<div class="lock-info-badge is-locked">🔒 Record Locked (1-time edit limit reached)</div>`;
+  } else if (rec && editCount === 1) {
+    lockBadgeHtml = `<div class="lock-info-badge can-edit">⚠️ You can edit this record 1 time before it locks permanently.</div>`;
+  }
+
+  let saveBtnLabel = 'Save';
+  if (isFuture) saveBtnLabel = '🔒 Form Opens at 12:00 AM';
+  else if (isEditLocked) saveBtnLabel = '🔒 Record Locked';
+
+  const card = document.getElementById('panelCard');
+  card.innerHTML = `
+    <p class="panel-title">Mark attendance</p>
+    <p class="panel-date">${niceDate}</p>
+
+    ${lockBadgeHtml}
+
+    <!-- EMPLOYEE NAME FIELD -->
+    <div class="form-group">
+      <label for="empNameInput">Employee Name *</label>
+      <input type="text" id="empNameInput" class="form-control" placeholder="Enter your name (e.g. Rahul)" value="${employeeNameVal}" ${isDisabled ? 'disabled' : ''}>
+    </div>
+
+    <!-- PRESENT / ABSENT BUTTONS -->
+    <div class="status-row">
+      <button type="button" class="status-btn" id="btnPresent" ${isDisabled ? 'disabled' : ''}>Present</button>
+      <button type="button" class="status-btn" id="btnAbsent" ${isDisabled ? 'disabled' : ''}>Absent</button>
+    </div>
+    
+    <!-- TASKS DONE CONTAINER (HIDDEN WHEN ABSENT) -->
+    <div class="tasks-container" id="tasksContainer">
+      <div class="task-label">TASKS DONE</div>
+      <div class="task-list">
+        <div class="task-item" id="itemSweeping"><input type="checkbox" id="cbSweeping" ${isDisabled ? 'disabled' : ''}><label for="cbSweeping">Sweeping</label></div>
+        <div class="task-item" id="itemMopping"><input type="checkbox" id="cbMopping" ${isDisabled ? 'disabled' : ''}><label for="cbMopping">Mopping</label></div>
+        <div class="task-item" id="itemDusting"><input type="checkbox" id="cbDusting" ${isDisabled ? 'disabled' : ''}><label for="cbDusting">Dusting</label></div>
+        <div class="task-item" id="itemFullCleaning"><input type="checkbox" id="cbFullCleaning" ${isDisabled ? 'disabled' : ''}><label for="cbFullCleaning">Full cleaning</label></div>
+      </div>
+    </div>
+    
+    <button type="button" class="save-btn" id="saveBtn" ${isDisabled ? 'disabled' : ''}>${saveBtnLabel}</button>
+    <div class="status-msg" id="statusMsg"></div>
+  `;
+
+  updateStatusButtons();
+
+  document.getElementById('cbSweeping').checked = selectedTasks.sweeping;
+  document.getElementById('cbMopping').checked = selectedTasks.mopping;
+  document.getElementById('cbDusting').checked = selectedTasks.dusting;
+  document.getElementById('cbFullCleaning').checked = selectedTasks.fullCleaning;
+
+  if (!isDisabled) {
+    document.getElementById('btnPresent').addEventListener('click', () => { 
+      selectedStatus = 'present'; 
+      updateStatusButtons(); 
+    });
+    document.getElementById('btnAbsent').addEventListener('click', () => { 
+      selectedStatus = 'absent'; 
+      updateStatusButtons(); 
+    });
+
+    ['Sweeping','Mopping','Dusting','FullCleaning'].forEach(key => {
+      const cb = document.getElementById('cb' + key);
+      const item = document.getElementById('item' + key);
+      const storeKey = key.charAt(0).toLowerCase() + key.slice(1);
+      
+      item.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'INPUT') cb.checked = !cb.checked;
+        selectedTasks[storeKey] = cb.checked;
+      });
+      cb.addEventListener('change', () => { selectedTasks[storeKey] = cb.checked; });
+    });
+
+    document.getElementById('saveBtn').addEventListener('click', () => saveDay(rec));
+  }
+}
+
+function updateStatusButtons() {
+  const btnPresent = document.getElementById('btnPresent');
+  const btnAbsent = document.getElementById('btnAbsent');
+  const tasksContainer = document.getElementById('tasksContainer');
+
+  if (btnPresent && btnAbsent) {
+    btnPresent.className = 'status-btn' + (selectedStatus === 'present' ? ' active-present' : '');
+    btnAbsent.className = 'status-btn' + (selectedStatus === 'absent' ? ' active-absent' : '');
+  }
+
+  if (tasksContainer) {
+    tasksContainer.style.display = selectedStatus === 'present' ? 'block' : 'none';
+  }
+}
+
+async function saveDay(existingRec) {
+  if (isFutureDate(selectedDate)) {
+    showStatusMsg('Form filling opens at 12:00 AM midnight on this date.', 'error');
+    return;
+  }
+
+  const empName = document.getElementById('empNameInput').value.trim();
+
+  if (!empName) {
+    showStatusMsg('Please enter your Employee Name before saving.', 'error');
+    document.getElementById('empNameInput').focus();
+    return;
+  }
+
+  localStorage.setItem(LAST_EMPLOYEE_KEY, empName);
+
+  const previousEditCount = existingRec && typeof existingRec.editCount === 'number' ? existingRec.editCount : (existingRec ? 1 : 0);
+  const newEditCount = previousEditCount + 1;
+  const isLocked = newEditCount >= 2;
+
+  if (selectedStatus === 'absent') {
+    records[selectedDate] = { 
+      status: 'absent', 
+      tasks: { sweeping: false, mopping: false, dusting: false, fullCleaning: false },
+      employeeName: empName,
+      editCount: newEditCount,
+      locked: isLocked,
+      updatedAt: new Date().toISOString()
+    };
+  } else {
+    records[selectedDate] = { 
+      status: 'present', 
+      tasks: { ...selectedTasks },
+      employeeName: empName,
+      editCount: newEditCount,
+      locked: isLocked,
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  await pushCloudRecords();
+  showStatusMsg('Saved.', 'success');
+  
+  openDay(selectedDate);
+  renderCalendar();
+}
+
+function showStatusMsg(text, type) {
+  const msg = document.getElementById('statusMsg');
+  if (!msg) return;
+  msg.textContent = text;
+  msg.className = 'status-msg ' + type;
+  setTimeout(() => { if (msg.textContent === 'Saved.') msg.textContent = ''; }, 3000);
+}
+
+document.getElementById('downloadPdfBtn').addEventListener('click', () => {
+  const monthName = MONTHS[currentMonth];
+  const monthPrefix = currentYear + '-' + String(currentMonth+1).padStart(2,'0');
+  
+  let p = 0, a = 0, tot = 0;
+  Object.keys(records).forEach(k => {
+    if (k.startsWith(monthPrefix)) {
+      tot++;
+      if (records[k].status === 'present') p++;
+      else if (records[k].status === 'absent') a++;
+    }
+  });
+
+  document.getElementById('printReportSubtitle').textContent = 
+    `Month: ${monthName} ${currentYear} | Total Days Logged: ${tot} | Present: ${p} | Absent: ${a}`;
+  
+  window.print();
+});
+
+document.getElementById('prevMonth').addEventListener('click', () => {
+  currentMonth--;
+  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+  renderCalendar();
+});
+document.getElementById('nextMonth').addEventListener('click', () => {
+  currentMonth++;
+  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  renderCalendar();
+});
+
+(function init() {
+  renderDow();
+  fetchCloudRecords();
+})();
+</script>
+</body>
+</html>
