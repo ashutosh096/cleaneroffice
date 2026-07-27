@@ -13,7 +13,7 @@ const initialSeedRecords = {
 let memoryCacheRecords = { ...initialSeedRecords };
 
 export default async function handler(req, res) {
-  // Enable CORS for QR Code mobile access
+  // Enable CORS for QR Code mobile access across devices
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -29,16 +29,16 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     if (KV_URL && KV_TOKEN) {
       try {
-        const response = await fetch(`${KV_URL}/get/sweeper_records_clear_v6`, {
+        const response = await fetch(`${KV_URL}/get/sweeper_records_live_v7`, {
           headers: { Authorization: `Bearer ${KV_TOKEN}` }
         });
         const data = await response.json();
         let records = data.result ? (typeof data.result === 'string' ? JSON.parse(data.result) : data.result) : null;
         
-        // If KV is brand new/empty, seed it automatically with initial records!
+        // If KV is empty (length === 0), seed it with initial records
         if (!records || typeof records !== 'object' || Object.keys(records).length === 0) {
           records = { ...initialSeedRecords };
-          await fetch(`${KV_URL}/set/sweeper_records_clear_v6`, {
+          await fetch(`${KV_URL}/set/sweeper_records_live_v7`, {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${KV_TOKEN}`,
@@ -70,7 +70,7 @@ export default async function handler(req, res) {
       memoryCacheRecords = records;
 
       if (KV_URL && KV_TOKEN) {
-        await fetch(`${KV_URL}/set/sweeper_records_clear_v6`, {
+        await fetch(`${KV_URL}/set/sweeper_records_live_v7`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${KV_TOKEN}`,
@@ -92,7 +92,7 @@ export default async function handler(req, res) {
     memoryCacheRecords = {};
     if (KV_URL && KV_TOKEN) {
       try {
-        await fetch(`${KV_URL}/set/sweeper_records_clear_v6`, {
+        await fetch(`${KV_URL}/set/sweeper_records_live_v7`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${KV_TOKEN}`,

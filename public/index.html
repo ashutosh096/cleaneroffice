@@ -409,7 +409,7 @@
 </div>
 
 <script>
-const STORAGE_KEY = 'sweeper_records_clear_v6';
+const STORAGE_KEY = 'sweeper_records_live_v7';
 const LAST_EMPLOYEE_KEY = 'sweeper_last_employee_name';
 const API_URL = '/api/attendance';
 
@@ -463,7 +463,7 @@ function updateSyncBadge(status) {
   }
 }
 
-// LOAD RECORDS FROM BACKEND AND LOCALSTORAGE FALLBACK
+// LOAD RECORDS FROM BACKEND API & LOCALSTORAGE
 async function fetchCloudRecords() {
   updateSyncBadge('syncing');
   try {
@@ -491,6 +491,10 @@ async function fetchCloudRecords() {
   }
 
   renderCalendar();
+  if (selectedDate) {
+    const currentRec = records[selectedDate] || null;
+    renderPanel(currentRec);
+  }
 }
 
 // SAVE RECORDS TO BACKEND API & LOCALSTORAGE
@@ -646,10 +650,15 @@ function renderPanel(rec) {
 
   updateStatusButtons();
 
-  document.getElementById('cbSweeping').checked = selectedTasks.sweeping;
-  document.getElementById('cbMopping').checked = selectedTasks.mopping;
-  document.getElementById('cbDusting').checked = selectedTasks.dusting;
-  document.getElementById('cbFullCleaning').checked = selectedTasks.fullCleaning;
+  const cbSweeping = document.getElementById('cbSweeping');
+  const cbMopping = document.getElementById('cbMopping');
+  const cbDusting = document.getElementById('cbDusting');
+  const cbFullCleaning = document.getElementById('cbFullCleaning');
+
+  cbSweeping.checked = selectedTasks.sweeping;
+  cbMopping.checked = selectedTasks.mopping;
+  cbDusting.checked = selectedTasks.dusting;
+  cbFullCleaning.checked = selectedTasks.fullCleaning;
 
   if (!isDisabled) {
     document.getElementById('btnPresent').addEventListener('click', () => { 
@@ -661,16 +670,46 @@ function renderPanel(rec) {
       updateStatusButtons(); 
     });
 
-    ['Sweeping','Mopping','Dusting','FullCleaning'].forEach(key => {
-      const cb = document.getElementById('cb' + key);
-      const item = document.getElementById('item' + key);
-      const storeKey = key.charAt(0).toLowerCase() + key.slice(1);
+    // FULL CLEANING MASTER CHECKBOX LOGIC
+    cbFullCleaning.addEventListener('change', () => {
+      const isChecked = cbFullCleaning.checked;
+      cbSweeping.checked = isChecked;
+      cbMopping.checked = isChecked;
+      cbDusting.checked = isChecked;
       
-      item.addEventListener('click', (e) => {
-        if (e.target.tagName !== 'INPUT') cb.checked = !cb.checked;
+      selectedTasks.fullCleaning = isChecked;
+      selectedTasks.sweeping = isChecked;
+      selectedTasks.mopping = isChecked;
+      selectedTasks.dusting = isChecked;
+    });
+
+    // INDIVIDUAL TASK CHECKBOX LOGIC
+    ['Sweeping','Mopping','Dusting'].forEach(key => {
+      const cb = document.getElementById('cb' + key);
+      const storeKey = key.charAt(0).toLowerCase() + key.slice(1);
+
+      cb.addEventListener('change', () => {
         selectedTasks[storeKey] = cb.checked;
+        if (!cb.checked) {
+          cbFullCleaning.checked = false;
+          selectedTasks.fullCleaning = false;
+        } else if (cbSweeping.checked && cbMopping.checked && cbDusting.checked) {
+          cbFullCleaning.checked = true;
+          selectedTasks.fullCleaning = true;
+        }
       });
-      cb.addEventListener('change', () => { selectedTasks[storeKey] = cb.checked; });
+    });
+
+    // CLICK HANDLERS FOR TASK ITEM CONTAINER ROWS
+    ['Sweeping','Mopping','Dusting','FullCleaning'].forEach(key => {
+      const item = document.getElementById('item' + key);
+      const cb = document.getElementById('cb' + key);
+      item.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'INPUT') {
+          cb.checked = !cb.checked;
+          cb.dispatchEvent(new Event('change'));
+        }
+      });
     });
 
     document.getElementById('saveBtn').addEventListener('click', () => saveDay(rec));
@@ -780,6 +819,8 @@ document.getElementById('nextMonth').addEventListener('click', () => {
 (function init() {
   renderDow();
   fetchCloudRecords();
+  // 4-SECOND REAL-TIME AUTO SYNC ACROSS MULTIPLE MOBILE DEVICES
+  setInterval(fetchCloudRecords, 4000);
 })();
 </script>
 </body>
