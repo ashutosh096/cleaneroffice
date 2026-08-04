@@ -797,6 +797,9 @@
 
       const isDisabled = isFuture || isEditLocked;
 
+      const todayStr = fmt(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+      const isPastUnfilled = !rec && selectedDate < todayStr;
+
       let lockBadgeHtml = '';
       if (isFuture) {
         lockBadgeHtml = `<div class="lock-info-badge is-future">🔒 Future Date - Form filling opens at 12:00 AM midnight of this day.</div>`;
@@ -804,6 +807,8 @@
         lockBadgeHtml = `<div class="lock-info-badge is-locked">🔒 Record Locked (1-time edit limit reached)</div>`;
       } else if (rec && editCount === 1) {
         lockBadgeHtml = `<div class="lock-info-badge can-edit">⚠️ You can edit this record 1 time before it locks permanently.</div>`;
+      } else if (isPastUnfilled) {
+        lockBadgeHtml = `<div class="lock-info-badge can-edit" style="background:#EFF6FF; border-color:#BFDBFE; color:#1E40AF;">📝 Past Date - Unfilled (You can fill attendance for this day now).</div>`;
       }
 
       let saveBtnLabel = 'Save';
