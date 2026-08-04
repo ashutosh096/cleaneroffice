@@ -1,16 +1,8 @@
 // Vercel Serverless Function: Cloud Database API for Sweeper Attendance
 
-const initialSeedRecords = {
-  "2026-07-13": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Priyanka", editCount: 1, locked: false, updatedAt: "2026-07-13T09:15:00.000Z" },
-  "2026-07-14": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Priyanka", editCount: 1, locked: false, updatedAt: "2026-07-14T09:20:00.000Z" },
-  "2026-07-15": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Ashutosh", editCount: 1, locked: false, updatedAt: "2026-07-15T09:10:00.000Z" },
-  "2026-07-16": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Priyanka", editCount: 1, locked: false, updatedAt: "2026-07-16T09:30:00.000Z" },
-  "2026-07-17": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Shreyansh", editCount: 1, locked: false, updatedAt: "2026-07-17T09:05:00.000Z" },
-  "2026-07-18": { status: "absent", tasks: { sweeping: false, mopping: false, dusting: false, fullCleaning: false }, employeeName: "Priyanka", editCount: 1, locked: false, updatedAt: "2026-07-18T10:00:00.000Z" },
-  "2026-07-20": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Shreyansh", editCount: 1, locked: false, updatedAt: "2026-07-20T09:12:00.000Z" }
-};
+const initialSeedRecords = {};
 
-let memoryCacheRecords = { ...initialSeedRecords };
+let memoryCacheRecords = {};
 
 export default async function handler(req, res) {
   // Enable CORS for QR Code mobile access across devices
@@ -33,21 +25,8 @@ export default async function handler(req, res) {
           headers: { Authorization: `Bearer ${KV_TOKEN}` }
         });
         const data = await response.json();
-        let records = data.result ? (typeof data.result === 'string' ? JSON.parse(data.result) : data.result) : null;
+        let records = data.result ? (typeof data.result === 'string' ? JSON.parse(data.result) : data.result) : {};
         
-        // If KV is empty (length === 0), seed it with initial records
-        if (!records || typeof records !== 'object' || Object.keys(records).length === 0) {
-          records = { ...initialSeedRecords };
-          await fetch(`${KV_URL}/set/sweeper_records_live_v7`, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${KV_TOKEN}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(JSON.stringify(records))
-          });
-        }
-
         return res.status(200).json({ success: true, records, source: 'Vercel KV' });
       } catch (err) {
         console.error('KV Read Error:', err);
