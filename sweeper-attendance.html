@@ -86,6 +86,16 @@
       color: #991B1B;
     }
 
+    .pct-badge {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #0D8A68;
+      background: #EBF7F3;
+      border: 1px solid #C4ECE0;
+      border-radius: 999px;
+      padding: 3px 10px;
+    }
+
     .capsule-divider {
       width: 1px;
       height: 12px;
@@ -231,6 +241,24 @@
       color: #A50E0E;
       border-color: #F5B2AD;
       font-weight: 600;
+    }
+
+    .day.present.selected {
+      background: #D1E7DD !important;
+      color: #0F5132 !important;
+      border: 2.5px solid #0B6E53 !important;
+      box-shadow: 0 4px 10px rgba(11, 110, 83, 0.25);
+      transform: scale(1.08);
+      z-index: 2;
+    }
+
+    .day.absent.selected {
+      background: #F8D7DA !important;
+      color: #842029 !important;
+      border: 2.5px solid #A50E0E !important;
+      box-shadow: 0 4px 10px rgba(165, 14, 14, 0.25);
+      transform: scale(1.08);
+      z-index: 2;
     }
 
     .day.future {
@@ -571,7 +599,7 @@
         <div class="capsule-badge">
           <span class="sync-badge" id="syncBadge">🟢 Synced</span>
           <span class="capsule-divider"></span>
-          <span class="gauge-text" id="gaugeCircle">0%</span>
+          <span class="gauge-text" id="gaugeCircle" style="font-weight:700; font-size:11.5px; color:#0D8A68;">📊 0%</span>
         </div>
       </div>
     </div>
@@ -602,7 +630,10 @@
 
     <!-- SUMMARY STATS CARD -->
     <div class="card">
-      <p class="panel-title" style="margin-bottom:14px;">This month</p>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <p class="panel-title" style="margin:0;">This month</p>
+        <span class="pct-badge" id="monthlyPctBadge">0% Attendance</span>
+      </div>
       <div class="summary-row">
         <div class="stat">
           <div class="num" id="sumTotalDays">0</div>
@@ -616,6 +647,9 @@
           <div class="num" id="sumAbsent">0</div>
           <div class="lbl">Absent</div>
         </div>
+      </div>
+      <div class="progress-bar-bg" style="margin-top:14px; background:#EBF3F0; height:8px; border-radius:999px; overflow:hidden;">
+        <div class="progress-bar-fill" id="summaryProgressBar" style="width:0%; height:100%; background:linear-gradient(90deg, #0D8A68, #10B981); transition:width 0.4s ease;"></div>
       </div>
     </div>
 
@@ -668,9 +702,13 @@
       }
     }
 
+    let lastRecordsHash = '';
+
     // LOAD RECORDS FROM BACKEND AND LOCALSTORAGE FALLBACK
     async function fetchCloudRecords() {
       updateSyncBadge('syncing');
+      let dataChanged = false;
+
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
@@ -683,9 +721,14 @@
         const res = await fetch(API_URL);
         if (res.ok) {
           const data = await res.json();
-          if (data.records && Object.keys(data.records).length > 0) {
-            records = data.records;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+          if (data.records) {
+            const newHash = JSON.stringify(data.records);
+            if (newHash !== lastRecordsHash) {
+              lastRecordsHash = newHash;
+              records = data.records;
+              localStorage.setItem(STORAGE_KEY, newHash);
+              dataChanged = true;
+            }
           }
           updateSyncBadge('synced');
         } else {
@@ -695,15 +738,21 @@
         updateSyncBadge('offline');
       }
 
-      renderCalendar();
+      if (dataChanged || !lastRecordsHash) {
+        if (!lastRecordsHash && records) lastRecordsHash = JSON.stringify(records);
+        renderCalendar();
+      }
     }
 
     // SAVE RECORDS TO BACKEND API & LOCALSTORAGE
     async function pushCloudRecords() {
       updateSyncBadge('syncing');
 
+      const newHash = JSON.stringify(records);
+      lastRecordsHash = newHash;
+
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        localStorage.setItem(STORAGE_KEY, newHash);
       } catch (e) { }
 
       try {
@@ -779,7 +828,14 @@
       document.getElementById('sumAbsent').textContent = absent;
 
       const pct = total > 0 ? Math.round((present / total) * 100) : 0;
-      document.getElementById('gaugeCircle').textContent = pct + '%';
+      const gaugeCircle = document.getElementById('gaugeCircle');
+      if (gaugeCircle) gaugeCircle.textContent = '📊 ' + pct + '%';
+
+      const pctBadge = document.getElementById('monthlyPctBadge');
+      if (pctBadge) pctBadge.textContent = pct + '% Attendance';
+
+      const summaryBar = document.getElementById('summaryProgressBar');
+      if (summaryBar) summaryBar.style.width = pct + '%';
     }
 
     function openDay(dateStr) {
