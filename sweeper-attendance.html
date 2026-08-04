@@ -204,9 +204,19 @@
     }
 
     .day.today {
-      border-color: #0D8A68;
+      border: 1.5px dashed #0D8A68;
       font-weight: 700;
       color: #0C382E;
+    }
+
+    .day.selected {
+      border: 2.5px solid #0C382E !important;
+      background: #E6F4EE !important;
+      font-weight: 700 !important;
+      color: #0C382E !important;
+      box-shadow: 0 4px 10px rgba(12, 56, 46, 0.2);
+      transform: scale(1.08);
+      z-index: 2;
     }
 
     .day.present {
@@ -734,6 +744,7 @@
         let cls = 'day';
 
         if (dateStr === todayStr) cls += ' today';
+        if (dateStr === selectedDate) cls += ' selected';
         if (isFuture) cls += ' future';
 
         if (rec) {
@@ -776,6 +787,11 @@
       const rec = records[dateStr] || null;
       selectedStatus = rec ? rec.status : 'present';
       selectedTasks = rec && rec.tasks ? { ...rec.tasks } : { sweeping: false, mopping: false, dusting: false, fullCleaning: false };
+      
+      document.querySelectorAll('#calGrid .day:not(.empty)').forEach(el => {
+        el.classList.toggle('selected', el.getAttribute('data-date') === dateStr);
+      });
+
       renderPanel(rec);
     }
 
@@ -1019,6 +1035,8 @@
     });
 
     (function init() {
+      const todayStr = fmt(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+      selectedDate = todayStr;
       renderDow();
       fetchCloudRecords();
       // 4-SECOND REAL-TIME AUTO SYNC ACROSS MULTIPLE MOBILE DEVICES
