@@ -799,10 +799,9 @@
       const isInputFocused = existingInput && document.activeElement === existingInput;
       const currentTypedValue = existingInput ? existingInput.value : '';
 
-      const savedEmployeeName = localStorage.getItem(LAST_EMPLOYEE_KEY) || '';
       const employeeNameVal = isInputFocused 
         ? currentTypedValue 
-        : (rec && rec.employeeName ? rec.employeeName : (currentTypedValue || savedEmployeeName));
+        : (rec && rec.employeeName ? rec.employeeName : '');
 
       const isFuture = isFutureDate(selectedDate);
       const editCount = rec && typeof rec.editCount === 'number' ? rec.editCount : (rec ? 1 : 0);
