@@ -616,26 +616,14 @@
     const LAST_EMPLOYEE_KEY = 'sweeper_last_employee_name';
     const API_URL = '/api/attendance';
 
-    const initialSeedRecords = {
-      "2026-07-13": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Priyanka", editCount: 1, locked: false },
-      "2026-07-14": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Priyanka", editCount: 1, locked: false },
-      "2026-07-15": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Ashutosh", editCount: 1, locked: false },
-      "2026-07-16": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Priyanka", editCount: 1, locked: false },
-      "2026-07-17": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Shreyansh", editCount: 1, locked: false },
-      "2026-07-18": { status: "absent", tasks: { sweeping: false, mopping: false, dusting: false, fullCleaning: false }, employeeName: "Priyanka", editCount: 1, locked: false },
-      "2026-07-20": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Shreyansh", editCount: 1, locked: false },
-      "2026-07-21": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Prerna", editCount: 1, locked: false },
-      "2026-07-22": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Priyanka", editCount: 1, locked: false },
-      "2026-07-23": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Priyanka", editCount: 1, locked: false },
-      "2026-07-24": { status: "present", tasks: { sweeping: true, mopping: true, dusting: true, fullCleaning: true }, employeeName: "Ashutosh", editCount: 1, locked: false }
-    };
+    const initialSeedRecords = {};
 
-    let records = { ...initialSeedRecords };
+    let records = {};
     let currentMonth = new Date().getMonth();
     let currentYear = new Date().getFullYear();
     let selectedDate = null;
     let selectedStatus = null;
-    let selectedTasks = { sweeping: true, mopping: true, dusting: true, fullCleaning: true };
+    let selectedTasks = { sweeping: false, mopping: false, dusting: false, fullCleaning: false };
 
     const DOW = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
     const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -787,7 +775,7 @@
       selectedDate = dateStr;
       const rec = records[dateStr] || null;
       selectedStatus = rec ? rec.status : 'present';
-      selectedTasks = rec && rec.tasks ? { ...rec.tasks } : { sweeping: true, mopping: true, dusting: true, fullCleaning: true };
+      selectedTasks = rec && rec.tasks ? { ...rec.tasks } : { sweeping: false, mopping: false, dusting: false, fullCleaning: false };
       renderPanel(rec);
     }
 
