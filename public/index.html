@@ -899,11 +899,6 @@
               selectedTasks.fullCleaning = newCheckedState;
             } else {
               selectedTasks[storeKey] = newCheckedState;
-              if (!newCheckedState) {
-                selectedTasks.fullCleaning = false;
-              } else if (selectedTasks.sweeping && selectedTasks.mopping && selectedTasks.dusting) {
-                selectedTasks.fullCleaning = true;
-              }
             }
             syncTaskUI();
           };
