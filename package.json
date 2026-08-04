@@ -1,10 +1,12 @@
 {
   "name": "sweeper-attendance",
   "version": "1.0.0",
+  "type": "module",
   "description": "Office Sweeper Attendance App with Cloud Storage for Vercel Deployment",
   "main": "api/attendance.js",
   "scripts": {
-    "start": "vercel dev"
+    "dev": "node dev-server.js",
+    "start": "node dev-server.js"
   },
   "dependencies": {}
 }

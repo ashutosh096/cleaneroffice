@@ -62,12 +62,30 @@ export default async function handler(req, res) {
   }
 
   // POST: Save updated attendance records
+  // POST: Save updated attendance records (with smart concurrency merging)
   if (req.method === 'POST') {
     try {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-      const records = body ? body.records : {};
+      const newIncomingRecords = body ? (body.records || {}) : {};
 
-      memoryCacheRecords = records;
+      let currentRecords = { ...memoryCacheRecords };
+
+      if (KV_URL && KV_TOKEN) {
+        try {
+          const response = await fetch(`${KV_URL}/get/sweeper_records_live_v7`, {
+            headers: { Authorization: `Bearer ${KV_TOKEN}` }
+          });
+          const data = await response.json();
+          const existingKV = data.result ? (typeof data.result === 'string' ? JSON.parse(data.result) : data.result) : null;
+          if (existingKV && typeof existingKV === 'object') {
+            currentRecords = { ...existingKV };
+          }
+        } catch (e) {}
+      }
+
+      // Smart merge: keep existing dates and update/add incoming dates
+      const mergedRecords = { ...currentRecords, ...newIncomingRecords };
+      memoryCacheRecords = mergedRecords;
 
       if (KV_URL && KV_TOKEN) {
         await fetch(`${KV_URL}/set/sweeper_records_live_v7`, {
@@ -76,12 +94,12 @@ export default async function handler(req, res) {
             Authorization: `Bearer ${KV_TOKEN}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(JSON.stringify(records))
+          body: JSON.stringify(JSON.stringify(mergedRecords))
         });
-        return res.status(200).json({ success: true, message: 'Saved to Vercel KV Database', records });
+        return res.status(200).json({ success: true, message: 'Saved & Merged to Vercel KV Database', records: mergedRecords });
       }
 
-      return res.status(200).json({ success: true, message: 'Saved to Server Cache', records });
+      return res.status(200).json({ success: true, message: 'Saved & Merged to Server Cache', records: mergedRecords });
     } catch (err) {
       return res.status(500).json({ success: false, error: err.message });
     }
