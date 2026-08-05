@@ -25,9 +25,18 @@ export default async function handler(req, res) {
           headers: { Authorization: `Bearer ${KV_TOKEN}` }
         });
         const data = await response.json();
-        let records = data.result ? (typeof data.result === 'string' ? JSON.parse(data.result) : data.result) : {};
+        let records = {};
+        if (data.result) {
+          records = typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
+          if (typeof records === 'string') {
+            try { records = JSON.parse(records); } catch (e) { }
+          }
+        }
+        if (records && typeof records === 'object') {
+          memoryCacheRecords = { ...records };
+        }
         
-        return res.status(200).json({ success: true, records, source: 'Vercel KV' });
+        return res.status(200).json({ success: true, records: memoryCacheRecords, source: 'Vercel KV' });
       } catch (err) {
         console.error('KV Read Error:', err);
       }
@@ -40,7 +49,6 @@ export default async function handler(req, res) {
     });
   }
 
-  // POST: Save updated attendance records
   // POST: Save updated attendance records (with smart concurrency merging)
   if (req.method === 'POST') {
     try {
@@ -55,7 +63,13 @@ export default async function handler(req, res) {
             headers: { Authorization: `Bearer ${KV_TOKEN}` }
           });
           const data = await response.json();
-          const existingKV = data.result ? (typeof data.result === 'string' ? JSON.parse(data.result) : data.result) : null;
+          let existingKV = null;
+          if (data.result) {
+            existingKV = typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
+            if (typeof existingKV === 'string') {
+              try { existingKV = JSON.parse(existingKV); } catch (e) { }
+            }
+          }
           if (existingKV && typeof existingKV === 'object') {
             currentRecords = { ...existingKV };
           }
@@ -73,7 +87,7 @@ export default async function handler(req, res) {
             Authorization: `Bearer ${KV_TOKEN}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(JSON.stringify(mergedRecords))
+          body: JSON.stringify(mergedRecords)
         });
         return res.status(200).json({ success: true, message: 'Saved & Merged to Vercel KV Database', records: mergedRecords });
       }
@@ -95,7 +109,7 @@ export default async function handler(req, res) {
             Authorization: `Bearer ${KV_TOKEN}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(JSON.stringify({}))
+          body: JSON.stringify({})
         });
       } catch (err) {}
     }

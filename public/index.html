@@ -1037,17 +1037,23 @@
         const res = await fetch(API_URL);
         if (res.ok) {
           const data = await res.json();
-          if (data.records && typeof data.records === 'object') {
+          let cloudData = data.records;
+          if (typeof cloudData === 'string') {
+            try { cloudData = JSON.parse(cloudData); } catch (e) { }
+          }
+          if (cloudData && typeof cloudData === 'object') {
             const merged = { ...records };
-            Object.keys(data.records).forEach(k => {
+            Object.keys(cloudData).forEach(k => {
               const localRec = records[k];
-              const cloudRec = data.records[k];
+              const cloudRec = cloudData[k];
               if (!localRec) {
                 merged[k] = cloudRec;
               } else if (cloudRec && cloudRec.updatedAt && localRec.updatedAt) {
                 if (new Date(cloudRec.updatedAt) >= new Date(localRec.updatedAt)) {
                   merged[k] = cloudRec;
                 }
+              } else if (cloudRec && !localRec.updatedAt) {
+                merged[k] = cloudRec;
               }
             });
 
@@ -1070,6 +1076,9 @@
       if (dataChanged || !lastRecordsHash) {
         if (!lastRecordsHash && records) lastRecordsHash = JSON.stringify(records);
         renderCalendar();
+        if (selectedDate && records[selectedDate]) {
+          openDay(selectedDate);
+        }
       }
     }
 
@@ -1485,11 +1494,25 @@
     }
 
     (function init() {
+      // 1. Synchronously load from localStorage first on page boot
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            records = parsed;
+          }
+        }
+      } catch (e) { }
+
       const todayStr = fmt(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
       selectedDate = todayStr;
       renderDow();
+      renderCalendar();
+      openDay(selectedDate);
+
+      // 2. Fetch cloud records & start 4-second auto sync
       fetchCloudRecords();
-      // 4-SECOND REAL-TIME AUTO SYNC ACROSS MULTIPLE MOBILE DEVICES
       setInterval(fetchCloudRecords, 4000);
     })();
   </script>
