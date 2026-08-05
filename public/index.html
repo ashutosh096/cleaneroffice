@@ -17,7 +17,12 @@
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #F2F7F4;
+      background-color: #F0FDF4;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(13, 138, 104, 0.10) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.10) 0px, transparent 50%),
+        radial-gradient(at 50% 30%, rgba(52, 211, 153, 0.05) 0px, transparent 50%);
+      background-attachment: fixed;
       color: #0E362E;
       padding: 24px 16px 60px;
       line-height: 1.5;
@@ -30,12 +35,14 @@
 
     /* CAPSULE HEADER CONTAINER */
     .header-card {
-      background: #FFFFFF;
-      border: 1px solid #E0ECE6;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(220, 238, 230, 0.9);
       border-radius: 24px;
-      padding: 16px 20px;
+      padding: 18px 22px;
       margin-bottom: 16px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      box-shadow: 0 10px 25px -5px rgba(13, 138, 104, 0.06), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
     }
 
     .header-row {
@@ -230,24 +237,26 @@
     }
 
     .day.present {
-      background: #E6F4EA;
-      color: #0B6E53;
-      border-color: #A8DAB5;
-      font-weight: 600;
+      background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+      color: #065F46;
+      border: 1.5px solid #34D399;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(52, 211, 153, 0.25);
     }
 
     .day.absent {
-      background: #FCE8E6;
-      color: #A50E0E;
-      border-color: #F5B2AD;
-      font-weight: 600;
+      background: linear-gradient(135deg, #FEE2E2 0%, #FCA5A5 100%);
+      color: #991B1B;
+      border: 1.5px solid #F87171;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(248, 113, 113, 0.25);
     }
 
     .day.present.selected {
       background: #D1E7DD !important;
       color: #0F5132 !important;
       border: 2.5px solid #0B6E53 !important;
-      box-shadow: 0 4px 10px rgba(11, 110, 83, 0.25);
+      box-shadow: 0 0 0 3px rgba(13, 138, 104, 0.25), 0 4px 12px rgba(11, 110, 83, 0.3) !important;
       transform: scale(1.08);
       z-index: 2;
     }
@@ -256,6 +265,7 @@
       background: #F8D7DA !important;
       color: #842029 !important;
       border: 2.5px solid #A50E0E !important;
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.25), 0 4px 12px rgba(165, 14, 14, 0.3) !important;
       box-shadow: 0 4px 10px rgba(165, 14, 14, 0.25);
       transform: scale(1.08);
       z-index: 2;
@@ -969,6 +979,7 @@
     let currentYear = new Date().getFullYear();
     let selectedDate = null;
     let selectedStatus = null;
+    let confirmingDate = null;
     let selectedTasks = { sweeping: false, mopping: false, dusting: false, fullCleaning: false };
 
     const DOW = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
@@ -1209,6 +1220,7 @@
     }
 
     function openDay(dateStr) {
+      confirmingDate = null;
       selectedDate = dateStr;
       const rec = records[dateStr] || null;
       selectedStatus = rec ? rec.status : 'present';
@@ -1229,10 +1241,9 @@
       const isInputFocused = existingInput && document.activeElement === existingInput;
       const currentTypedValue = existingInput ? existingInput.value : '';
 
-      const savedLast = localStorage.getItem(LAST_EMPLOYEE_KEY);
       const employeeNameVal = isInputFocused 
         ? currentTypedValue 
-        : (rec && rec.employeeName ? rec.employeeName : (savedLast !== null ? savedLast : ''));
+        : (rec && rec.employeeName ? rec.employeeName : '');
 
       const daysInPast = getDaysInPast(selectedDate);
       const isFuture = isFutureDate(selectedDate);
@@ -1283,10 +1294,10 @@
     <div class="tasks-container" id="tasksContainer">
       <div class="task-label">TASKS DONE</div>
       <div class="task-list">
-        <div class="task-item" id="itemSweeping"><input type="checkbox" id="cbSweeping" ${isDisabled ? 'disabled' : ''}><label for="cbSweeping">Sweeping</label></div>
-        <div class="task-item" id="itemMopping"><input type="checkbox" id="cbMopping" ${isDisabled ? 'disabled' : ''}><label for="cbMopping">Mopping</label></div>
-        <div class="task-item" id="itemDusting"><input type="checkbox" id="cbDusting" ${isDisabled ? 'disabled' : ''}><label for="cbDusting">Dusting</label></div>
-        <div class="task-item" id="itemFullCleaning"><input type="checkbox" id="cbFullCleaning" ${isDisabled ? 'disabled' : ''}><label for="cbFullCleaning">Full cleaning</label></div>
+        <div class="task-item" id="itemSweeping"><input type="checkbox" id="cbSweeping" ${isDisabled ? 'disabled' : ''}><label for="cbSweeping">🧹 Sweeping</label></div>
+        <div class="task-item" id="itemMopping"><input type="checkbox" id="cbMopping" ${isDisabled ? 'disabled' : ''}><label for="cbMopping">🧽 Mopping</label></div>
+        <div class="task-item" id="itemDusting"><input type="checkbox" id="cbDusting" ${isDisabled ? 'disabled' : ''}><label for="cbDusting">🪶 Dusting</label></div>
+        <div class="task-item" id="itemFullCleaning"><input type="checkbox" id="cbFullCleaning" ${isDisabled ? 'disabled' : ''}><label for="cbFullCleaning">✨ Full cleaning</label></div>
       </div>
     </div>
     
@@ -1310,6 +1321,7 @@
           newEmpInput.setSelectionRange(newEmpInput.value.length, newEmpInput.value.length);
         }
         newEmpInput.addEventListener('input', (e) => {
+          confirmingDate = null;
           localStorage.setItem(LAST_EMPLOYEE_KEY, e.target.value);
         });
       }
@@ -1323,10 +1335,12 @@
 
       if (!isDisabled) {
         document.getElementById('btnPresent').addEventListener('click', () => {
+          confirmingDate = null;
           selectedStatus = 'present';
           updateStatusButtons();
         });
         document.getElementById('btnAbsent').addEventListener('click', () => {
+          confirmingDate = null;
           selectedStatus = 'absent';
           updateStatusButtons();
         });
@@ -1344,8 +1358,8 @@
           const storeKey = key.charAt(0).toLowerCase() + key.slice(1);
 
           const handleToggle = (newCheckedState) => {
+            confirmingDate = null;
             if (key === 'FullCleaning') {
-              // Master toggle: set all tasks to newCheckedState
               selectedTasks.sweeping = newCheckedState;
               selectedTasks.mopping = newCheckedState;
               selectedTasks.dusting = newCheckedState;
@@ -1367,7 +1381,27 @@
           });
         });
 
-        document.getElementById('saveBtn').addEventListener('click', () => saveDay(rec));
+        document.getElementById('saveBtn').addEventListener('click', () => {
+          if (confirmingDate !== selectedDate) {
+            const empName = document.getElementById('empNameInput').value.trim();
+            if (!empName) {
+              showToast('Please enter your Employee Name before saving.', 'error');
+              document.getElementById('empNameInput').focus();
+              return;
+            }
+            confirmingDate = selectedDate;
+            const btn = document.getElementById('saveBtn');
+            if (btn) {
+              btn.textContent = '⚠️ Confirm Save? Tap again to save';
+              btn.style.background = 'linear-gradient(135deg, #D97706 0%, #B45309 100%)';
+              btn.style.boxShadow = '0 6px 20px rgba(217, 119, 6, 0.3)';
+            }
+            showToast('Are you sure? Tap Save again to confirm.', 'error');
+            return;
+          }
+          confirmingDate = null;
+          saveDay(rec);
+        });
       }
     }
 
