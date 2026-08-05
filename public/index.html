@@ -753,6 +753,43 @@
       background: #0B785A;
     }
 
+    /* TOAST NOTIFICATION STYLES */
+    .toast-notification {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #0C3E33;
+      color: #FFFFFF;
+      padding: 12px 24px;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(12, 62, 51, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .toast-notification.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast-notification.success {
+      background: #0D8A68;
+      color: #ffffff;
+    }
+
+    .toast-notification.error {
+      background: #D93025;
+      color: #ffffff;
+    }
+
     /* PRINT FORMATTING */
     @media print {
       body {
@@ -792,6 +829,12 @@
 </head>
 
 <body>
+  <!-- TOAST POPUP NOTIFICATION -->
+  <div class="toast-notification" id="toastNotification">
+    <span id="toastIcon">✅</span>
+    <span id="toastText">Saved successfully!</span>
+  </div>
+
   <div class="wrap">
 
     <div class="print-header">
@@ -1153,7 +1196,7 @@
       } else if (isEditLocked) {
         lockBadgeHtml = `<div class="lock-info-badge is-locked">🔒 Record Locked (1-time edit limit reached)</div>`;
       } else if (rec && editCount === 1) {
-        lockBadgeHtml = `<div class="lock-info-badge can-edit">⚠️ You can edit this record 1 time before it locks permanently.</div>`;
+        lockBadgeHtml = `<div class="lock-info-badge can-edit">⚠️ You can edit this record 1 last time before it locks permanently.</div>`;
       } else if (daysInPast > 0 && daysInPast <= 2) {
         lockBadgeHtml = `<div class="lock-info-badge can-edit" style="background:#EFF6FF; border-color:#BFDBFE; color:#1E40AF;">📝 Past Date (${daysInPast} day${daysInPast > 1 ? 's' : ''} ago) - Fillable within 2-day limit.</div>`;
       }
@@ -1281,25 +1324,49 @@
       }
     }
 
+    let toastTimer = null;
+    function showToast(text, type = 'success') {
+      const toast = document.getElementById('toastNotification');
+      const toastText = document.getElementById('toastText');
+      const toastIcon = document.getElementById('toastIcon');
+
+      if (!toast) return;
+
+      toastText.textContent = text;
+      toastIcon.textContent = type === 'success' ? '✅' : '⚠️';
+      toast.className = `toast-notification show ${type}`;
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.className = 'toast-notification';
+      }, 3000);
+    }
+
     async function saveDay(existingRec) {
       if (isFutureDate(selectedDate)) {
-        showStatusMsg('Form filling opens at 12:00 AM midnight on this date.', 'error');
+        showToast('Form filling opens at 12:00 AM midnight on this date.', 'error');
         return;
       }
       if (getDaysInPast(selectedDate) > 2) {
-        showStatusMsg('Past date locked. You can only fill attendance for the last 2 days.', 'error');
+        showToast('Past date locked. You can only fill attendance for the last 2 days.', 'error');
         return;
       }
 
       const empName = document.getElementById('empNameInput').value.trim();
 
       if (!empName) {
-        showStatusMsg('Please enter your Employee Name before saving.', 'error');
+        showToast('Please enter your Employee Name before saving.', 'error');
         document.getElementById('empNameInput').focus();
         return;
       }
 
       localStorage.setItem(LAST_EMPLOYEE_KEY, empName);
+
+      const saveBtn = document.getElementById('saveBtn');
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+      }
 
       const previousEditCount = existingRec && typeof existingRec.editCount === 'number' ? existingRec.editCount : (existingRec ? 1 : 0);
       const newEditCount = previousEditCount + 1;
@@ -1326,10 +1393,11 @@
       }
 
       await pushCloudRecords();
-      showStatusMsg('Saved.', 'success');
 
       openDay(selectedDate);
       renderCalendar();
+
+      showToast('Attendance saved successfully!', 'success');
     }
 
     function showStatusMsg(text, type) {
