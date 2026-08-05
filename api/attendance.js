@@ -76,8 +76,21 @@ export default async function handler(req, res) {
         } catch (e) {}
       }
 
+      // Delete requested dates if specified
+      if (Array.isArray(body.deleteDates) && body.deleteDates.length > 0) {
+        body.deleteDates.forEach(d => {
+          delete currentRecords[d];
+        });
+      }
+
       // Smart merge: keep existing dates and update/add incoming dates
       const mergedRecords = { ...currentRecords, ...newIncomingRecords };
+      if (Array.isArray(body.deleteDates) && body.deleteDates.length > 0) {
+        body.deleteDates.forEach(d => {
+          delete mergedRecords[d];
+        });
+      }
+
       memoryCacheRecords = mergedRecords;
 
       if (KV_URL && KV_TOKEN) {
@@ -98,22 +111,60 @@ export default async function handler(req, res) {
     }
   }
 
-  // DELETE: Clear all records completely
+  // DELETE: Clear all records or specific dates
   if (req.method === 'DELETE') {
-    memoryCacheRecords = {};
-    if (KV_URL && KV_TOKEN) {
-      try {
-        await fetch(`${KV_URL}/set/sweeper_records_live_v7`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${KV_TOKEN}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({})
-        });
-      } catch (err) {}
+    let body = {};
+    try {
+      body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+    } catch (e) {}
+
+    const deleteDates = body.deleteDates || [];
+
+    if (Array.isArray(deleteDates) && deleteDates.length > 0) {
+      deleteDates.forEach(d => {
+        delete memoryCacheRecords[d];
+      });
+
+      if (KV_URL && KV_TOKEN) {
+        try {
+          const response = await fetch(`${KV_URL}/get/sweeper_records_live_v7`, {
+            headers: { Authorization: `Bearer ${KV_TOKEN}` }
+          });
+          const data = await response.json();
+          let existingKV = null;
+          if (data.result) {
+            existingKV = typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
+            if (typeof existingKV === 'string') {
+              try { existingKV = JSON.parse(existingKV); } catch (e) { }
+            }
+          }
+          if (existingKV && typeof existingKV === 'object') {
+            deleteDates.forEach(d => { delete existingKV[d]; });
+            await fetch(`${KV_URL}/set/sweeper_records_live_v7`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${KV_TOKEN}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify(existingKV)
+            });
+          }
+        } catch (err) {}
+      }
+      return res.status(200).json({ success: true, message: `Cleared dates: ${deleteDates.join(', ')}`, records: memoryCacheRecords });
+    } else {
+      memoryCacheRecords = {};
+      if (KV_URL && KV_TOKEN) {
+        try {
+          await fetch(`${KV_URL}/set/sweeper_records_live_v7`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${KV_TOKEN}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+          });
+        } catch (err) {}
+      }
+      return res.status(200).json({ success: true, message: 'All records cleared successfully.' });
     }
-    return res.status(200).json({ success: true, message: 'All records cleared successfully.' });
   }
 
   return res.status(405).json({ error: 'Method not allowed' });

@@ -1109,6 +1109,36 @@
       }
     }
 
+    async function deleteDateRecord(dateStr) {
+      if (!dateStr) return;
+      if (!confirm(`Are you sure you want to clear attendance data for ${dateStr}?`)) return;
+
+      delete records[dateStr];
+      const newHash = JSON.stringify(records);
+      lastRecordsHash = newHash;
+      try { localStorage.setItem(STORAGE_KEY, newHash); } catch (e) {}
+
+      updateSyncBadge('syncing');
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ records, deleteDates: [dateStr] })
+        });
+        if (res.ok) {
+          updateSyncBadge('synced');
+          showToast(`Record for ${dateStr} cleared!`, 'success');
+        } else {
+          updateSyncBadge('offline');
+        }
+      } catch (e) {
+        updateSyncBadge('offline');
+      }
+
+      renderCalendar();
+      openDay(dateStr);
+    }
+
     function renderDow() {
       const row = document.getElementById('dowRow');
       row.innerHTML = DOW.map(d => `<div class="dow">${d}</div>`).join('');
@@ -1261,8 +1291,16 @@
     </div>
     
     <button type="button" class="save-btn" id="saveBtn" ${isDisabled ? 'disabled' : ''}>${saveBtnLabel}</button>
+    ${rec ? `<button type="button" id="resetDateBtn" style="margin-top: 10px; width: 100%; padding: 10px; border: 1.5px solid #EF4444; background: #FEF2F2; color: #DC2626; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">🗑️ Clear / Reset Record for ${selectedDate}</button>` : ''}
     <div class="status-msg" id="statusMsg"></div>
   `;
+
+      const resetBtn = document.getElementById('resetDateBtn');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+          deleteDateRecord(selectedDate);
+        });
+      }
 
       // Restore focus & cursor position if user was actively typing
       const newEmpInput = document.getElementById('empNameInput');
