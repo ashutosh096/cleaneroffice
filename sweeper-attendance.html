@@ -1027,7 +1027,9 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (parsed && Object.keys(parsed).length > 0) records = parsed;
+          if (parsed && typeof parsed === 'object') {
+            records = { ...parsed, ...records };
+          }
         }
       } catch (e) { }
 
@@ -1035,12 +1037,25 @@
         const res = await fetch(API_URL);
         if (res.ok) {
           const data = await res.json();
-          if (data.records) {
-            const newHash = JSON.stringify(data.records);
+          if (data.records && typeof data.records === 'object') {
+            const merged = { ...records };
+            Object.keys(data.records).forEach(k => {
+              const localRec = records[k];
+              const cloudRec = data.records[k];
+              if (!localRec) {
+                merged[k] = cloudRec;
+              } else if (cloudRec && cloudRec.updatedAt && localRec.updatedAt) {
+                if (new Date(cloudRec.updatedAt) >= new Date(localRec.updatedAt)) {
+                  merged[k] = cloudRec;
+                }
+              }
+            });
+
+            const newHash = JSON.stringify(merged);
             if (newHash !== lastRecordsHash) {
               lastRecordsHash = newHash;
-              records = data.records;
-              localStorage.setItem(STORAGE_KEY, newHash);
+              records = merged;
+              try { localStorage.setItem(STORAGE_KEY, newHash); } catch (e) { }
               dataChanged = true;
             }
           }
@@ -1392,12 +1407,20 @@
         };
       }
 
-      await pushCloudRecords();
+      // Save to localStorage immediately
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+      } catch (e) { }
 
+      // Update UI immediately (calendar & panel)
       openDay(selectedDate);
       renderCalendar();
 
+      // Show toast notification feedback
       showToast('Attendance saved successfully!', 'success');
+
+      // Push to backend cloud database
+      await pushCloudRecords();
     }
 
     function showStatusMsg(text, type) {
