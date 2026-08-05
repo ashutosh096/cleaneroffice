@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sweeper attendance</title>
+  <title>DailySweep</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -542,6 +542,217 @@
       padding: 20px 0;
     }
 
+    /* PROFILE DP STYLING */
+    .profile-dp {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0D8A68 0%, #064E3B 100%);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(13, 138, 104, 0.25);
+      border: 2px solid #E0ECE6;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .profile-dp:hover {
+      transform: scale(1.06);
+      box-shadow: 0 6px 14px rgba(13, 138, 104, 0.35);
+      border-color: #0D8A68;
+    }
+
+    /* PROFILE MODAL STYLES */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(12, 56, 46, 0.45);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      padding: 16px;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #FFFFFF;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      position: relative;
+      transform: translateY(20px) scale(0.95);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid #E0ECE6;
+    }
+
+    .modal-backdrop.active .modal-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: #F2F7F4;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 20px;
+      color: #587970;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .modal-close-btn:hover {
+      background: #E0ECE6;
+      color: #0C382E;
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 4px;
+    }
+
+    .profile-avatar-large {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0D8A68 0%, #064E3B 100%);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 28px;
+      box-shadow: 0 6px 16px rgba(13, 138, 104, 0.3);
+      border: 3px solid #EBF7F3;
+      flex-shrink: 0;
+    }
+
+    .profile-title-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .profile-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: #0C382E;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .profile-tag {
+      display: inline-block;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #0D8A68;
+      background: #EBF7F3;
+      border: 1px solid #C4ECE0;
+      border-radius: 9999px;
+      padding: 2px 10px;
+      margin-top: 6px;
+      width: fit-content;
+    }
+
+    .profile-divider {
+      height: 1px;
+      background: #E0ECE6;
+      margin: 20px 0;
+    }
+
+    .profile-details {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .profile-detail-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #F7FAF8;
+      padding: 12px 16px;
+      border-radius: 16px;
+      border: 1px solid #E0ECE6;
+    }
+
+    .profile-icon-box {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: #FFFFFF;
+      border: 1px solid #E0ECE6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .profile-detail-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .profile-detail-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #7D9B92;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .profile-detail-value {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: #0E362E;
+      margin-top: 1px;
+    }
+
+    .profile-action-btn {
+      width: 100%;
+      padding: 12px;
+      background: #0D8A68;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background 0.15s ease;
+    }
+
+    .profile-action-btn:hover {
+      background: #0B785A;
+    }
+
     /* PRINT FORMATTING */
     @media print {
       body {
@@ -558,7 +769,8 @@
       .pdf-btn,
       #panelCard,
       .month-nav button,
-      .header-card {
+      .header-card,
+      .modal-backdrop {
         display: none !important;
       }
 
@@ -583,7 +795,7 @@
   <div class="wrap">
 
     <div class="print-header">
-      <h1 style="font-size:22px; color:#000; margin-bottom:4px;">Sweeper Attendance Report</h1>
+      <h1 style="font-size:22px; color:#000; margin-bottom:4px;">DailySweep Report</h1>
       <p style="font-size:12px; color:#555;" id="printReportSubtitle"></p>
       <hr style="margin:10px 0; border:0; border-top:1px solid #ccc;">
     </div>
@@ -591,9 +803,15 @@
     <!-- ENTIRE TOP HEADER IN CAPSULE CARD STRUCTURE -->
     <div class="header-card">
       <div class="header-row">
-        <div>
-          <h1>Sweeper attendance</h1>
-          <p class="sub">Tap a date to mark attendance and cleaning tasks.</p>
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <!-- PROFILE ROUND DP BUTTON -->
+          <div class="profile-dp" id="profileDpBtn" title="Click to view profile">
+            K
+          </div>
+          <div>
+            <h1>DailySweep</h1>
+            <p class="sub">Tap a date to mark attendance and cleaning tasks.</p>
+          </div>
         </div>
 
         <div class="capsule-badge">
@@ -601,6 +819,47 @@
           <span class="capsule-divider"></span>
           <span class="gauge-text" id="gaugeCircle" style="font-weight:700; font-size:11.5px; color:#0D8A68;">📊 0%</span>
         </div>
+      </div>
+    </div>
+
+    <!-- PROFILE DETAILS MODAL POPUP -->
+    <div class="modal-backdrop" id="profileModal">
+      <div class="modal-card">
+        <button class="modal-close-btn" id="closeProfileModal" aria-label="Close modal">&times;</button>
+        <div class="profile-header">
+          <div class="profile-avatar-large">K</div>
+          <div class="profile-title-group">
+            <h2 class="profile-name">Kuldeep</h2>
+            <span class="profile-tag">Servant Profile</span>
+          </div>
+        </div>
+        <div class="profile-divider"></div>
+        <div class="profile-details">
+          <div class="profile-detail-item">
+            <div class="profile-icon-box">👤</div>
+            <div class="profile-detail-content">
+              <div class="profile-detail-label">Servant Name</div>
+              <div class="profile-detail-value">Kuldeep</div>
+            </div>
+          </div>
+          <div class="profile-detail-item">
+            <div class="profile-icon-box">📞</div>
+            <div class="profile-detail-content">
+              <div class="profile-detail-label">Mobile Number</div>
+              <div class="profile-detail-value">
+                <a href="tel:9336414005" style="color: inherit; text-decoration: none;">9336414005</a>
+              </div>
+            </div>
+          </div>
+          <div class="profile-detail-item">
+            <div class="profile-icon-box">📍</div>
+            <div class="profile-detail-content">
+              <div class="profile-detail-label">Address</div>
+              <div class="profile-detail-value">Technopark IIT Kanpur</div>
+            </div>
+          </div>
+        </div>
+        <button class="profile-action-btn" id="closeProfileModalBtn">Close</button>
       </div>
     </div>
 
@@ -685,6 +944,18 @@
       today.setHours(0, 0, 0, 0);
 
       return target > today;
+    }
+
+    function getDaysInPast(dateStr) {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const target = new Date(y, m - 1, d);
+      target.setHours(0, 0, 0, 0);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const diffMs = today.getTime() - target.getTime();
+      return Math.floor(diffMs / (1000 * 60 * 60 * 24));
     }
 
     function updateSyncBadge(status) {
@@ -790,11 +1061,13 @@
         const dateStr = fmt(currentYear, currentMonth, d);
         const rec = records[dateStr];
         const isFuture = isFutureDate(dateStr);
+        const daysPast = getDaysInPast(dateStr);
+        const isTooOld = daysPast > 2;
         let cls = 'day';
 
         if (dateStr === todayStr) cls += ' today';
         if (dateStr === selectedDate) cls += ' selected';
-        if (isFuture) cls += ' future';
+        if (isFuture || isTooOld) cls += ' future';
 
         if (rec) {
           if (rec.status === 'present') cls += ' present';
@@ -859,32 +1132,35 @@
       const isInputFocused = existingInput && document.activeElement === existingInput;
       const currentTypedValue = existingInput ? existingInput.value : '';
 
+      const savedLast = localStorage.getItem(LAST_EMPLOYEE_KEY);
       const employeeNameVal = isInputFocused 
         ? currentTypedValue 
-        : (rec && rec.employeeName ? rec.employeeName : '');
+        : (rec && rec.employeeName ? rec.employeeName : (savedLast !== null ? savedLast : ''));
 
+      const daysInPast = getDaysInPast(selectedDate);
       const isFuture = isFutureDate(selectedDate);
+      const isTooOldPast = daysInPast > 2;
       const editCount = rec && typeof rec.editCount === 'number' ? rec.editCount : (rec ? 1 : 0);
       const isEditLocked = rec && (rec.locked || editCount >= 2);
 
-      const isDisabled = isFuture || isEditLocked;
-
-      const todayStr = fmt(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
-      const isPastUnfilled = !rec && selectedDate < todayStr;
+      const isDisabled = isFuture || isTooOldPast || isEditLocked;
 
       let lockBadgeHtml = '';
       if (isFuture) {
         lockBadgeHtml = `<div class="lock-info-badge is-future">🔒 Future Date - Form filling opens at 12:00 AM midnight of this day.</div>`;
+      } else if (isTooOldPast) {
+        lockBadgeHtml = `<div class="lock-info-badge is-locked">🔒 Past Date Locked - Only attendance for the last 2 days can be filled.</div>`;
       } else if (isEditLocked) {
         lockBadgeHtml = `<div class="lock-info-badge is-locked">🔒 Record Locked (1-time edit limit reached)</div>`;
       } else if (rec && editCount === 1) {
         lockBadgeHtml = `<div class="lock-info-badge can-edit">⚠️ You can edit this record 1 time before it locks permanently.</div>`;
-      } else if (isPastUnfilled) {
-        lockBadgeHtml = `<div class="lock-info-badge can-edit" style="background:#EFF6FF; border-color:#BFDBFE; color:#1E40AF;">📝 Past Date - Unfilled (You can fill attendance for this day now).</div>`;
+      } else if (daysInPast > 0 && daysInPast <= 2) {
+        lockBadgeHtml = `<div class="lock-info-badge can-edit" style="background:#EFF6FF; border-color:#BFDBFE; color:#1E40AF;">📝 Past Date (${daysInPast} day${daysInPast > 1 ? 's' : ''} ago) - Fillable within 2-day limit.</div>`;
       }
 
       let saveBtnLabel = 'Save';
       if (isFuture) saveBtnLabel = '🔒 Form Opens at 12:00 AM';
+      else if (isTooOldPast) saveBtnLabel = '🔒 Date Locked (Max 2 Days Past)';
       else if (isEditLocked) saveBtnLabel = '🔒 Record Locked';
 
       const card = document.getElementById('panelCard');
@@ -897,7 +1173,7 @@
     <!-- EMPLOYEE NAME FIELD -->
     <div class="form-group">
       <label for="empNameInput">Employee Name *</label>
-      <input type="text" id="empNameInput" class="form-control" placeholder="Enter your name (e.g. Rahul)" value="${employeeNameVal}" ${isDisabled ? 'disabled' : ''}>
+      <input type="text" id="empNameInput" class="form-control" placeholder="Enter Employee Name" value="${employeeNameVal}" ${isDisabled ? 'disabled' : ''}>
     </div>
 
     <!-- PRESENT / ABSENT BUTTONS -->
@@ -1010,6 +1286,10 @@
         showStatusMsg('Form filling opens at 12:00 AM midnight on this date.', 'error');
         return;
       }
+      if (getDaysInPast(selectedDate) > 2) {
+        showStatusMsg('Past date locked. You can only fill attendance for the last 2 days.', 'error');
+        return;
+      }
 
       const empName = document.getElementById('empNameInput').value.trim();
 
@@ -1089,6 +1369,29 @@
       if (currentMonth > 11) { currentMonth = 0; currentYear++; }
       renderCalendar();
     });
+
+    // PROFILE MODAL EVENT LISTENERS
+    const profileDpBtn = document.getElementById('profileDpBtn');
+    const profileModal = document.getElementById('profileModal');
+    const closeProfileModal = document.getElementById('closeProfileModal');
+    const closeProfileModalBtn = document.getElementById('closeProfileModalBtn');
+
+    function openProfileModal() {
+      if (profileModal) profileModal.classList.add('active');
+    }
+
+    function hideProfileModal() {
+      if (profileModal) profileModal.classList.remove('active');
+    }
+
+    if (profileDpBtn) profileDpBtn.addEventListener('click', openProfileModal);
+    if (closeProfileModal) closeProfileModal.addEventListener('click', hideProfileModal);
+    if (closeProfileModalBtn) closeProfileModalBtn.addEventListener('click', hideProfileModal);
+    if (profileModal) {
+      profileModal.addEventListener('click', (e) => {
+        if (e.target === profileModal) hideProfileModal();
+      });
+    }
 
     (function init() {
       const todayStr = fmt(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());

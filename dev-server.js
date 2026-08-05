@@ -53,5 +53,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Local Sweeper Attendance App is running at http://localhost:${PORT}/`);
+  console.log(`Local DailySweep App is running at http://localhost:${PORT}/`);
 });
