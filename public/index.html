@@ -1302,16 +1302,8 @@
     </div>
     
     <button type="button" class="save-btn" id="saveBtn" ${isDisabled ? 'disabled' : ''}>${saveBtnLabel}</button>
-    ${rec ? `<button type="button" id="resetDateBtn" style="margin-top: 10px; width: 100%; padding: 10px; border: 1.5px solid #EF4444; background: #FEF2F2; color: #DC2626; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">🗑️ Clear / Reset Record for ${selectedDate}</button>` : ''}
     <div class="status-msg" id="statusMsg"></div>
   `;
-
-      const resetBtn = document.getElementById('resetDateBtn');
-      if (resetBtn) {
-        resetBtn.addEventListener('click', () => {
-          deleteDateRecord(selectedDate);
-        });
-      }
 
       // Restore focus & cursor position if user was actively typing
       const newEmpInput = document.getElementById('empNameInput');
